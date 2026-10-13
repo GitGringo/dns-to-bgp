@@ -1,0 +1,7 @@
+# Example domain list: /opt/dns-to-bgp/domains.d/NAME.list
+# Any number of *.list files may live in the directory; they are merged.
+# One pattern per line. "*.domain" matches subdomains only (never the apex).
+# "domain" without "*." matches the apex only, never subdomains. "#" starts a comment.
+*.cdn.example.net
+*.media.example.org
+*.video.example.com

@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: unbound-route-state/go.mod
+          cache-dependency-path: unbound-route-state/go.sum
+      - name: gofmt
+        run: make fmt-check
+      - name: go vet
+        run: make vet
+      - name: build
+        run: make build
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: byte-compile
+        run: make check-python

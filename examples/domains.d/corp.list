@@ -1,0 +1,5 @@
+# Example list referenced from a block header in communities.conf:
+#   [corp.list, *.extra.example.com]
+corp.example.com
+*.corp.example.com
+*.intranet.example.com

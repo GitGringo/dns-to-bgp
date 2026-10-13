@@ -1,0 +1,21 @@
+# build output
+/bin/
+/unbound-route-state/unbound-route-state
+*.test
+*.out
+
+# Python
+__pycache__/
+*.py[cod]
+
+# editors / OS
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+
+# local, site-specific configuration must never be committed
+/conf.d/
+/domains.d/
+*.local.conf

@@ -1,0 +1,47 @@
+[Unit]
+Description=unbound-route-state - DNS-to-BGP state daemon
+# Start after Unbound (source of events) and BIRD (the BGP peer). The
+# dependencies are soft (Wants, not Requires): both sides tolerate the socket or
+# the peer being temporarily unavailable (non-blocking connect + backoff), so
+# the ordering is a convenience, not a correctness requirement.
+After=network.target bird.service unbound.service
+Wants=bird.service unbound.service
+
+[Service]
+Type=simple
+# Same user as Unbound, so that the Python module (running inside Unbound) can
+# write to the socket.
+User=unbound
+Group=unbound
+ExecStart=/opt/dns-to-bgp/unbound-route-state/unbound-route-state \
+    daemon --config /opt/dns-to-bgp/conf.d/state.conf
+Restart=on-failure
+RestartSec=2
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+# systemd creates /run/dns-to-bgp (owned by User/Group above) at start and
+# removes it at stop. listen_socket in state.conf must be
+# /run/dns-to-bgp/state.sock to live in this directory.
+RuntimeDirectory=dns-to-bgp
+RuntimeDirectoryMode=0750
+
+# Memory guard rails. GOMEMLIMIT makes the Go runtime collect garbage more
+# aggressively before the cgroup limit is reached.
+MemoryMax=64M
+MemoryHigh=48M
+Environment=GOMEMLIMIT=48MiB
+
+ProtectSystem=strict
+NoNewPrivileges=yes
+
+# Traffic keepalive ([keepalive] enabled = yes in state.conf): the child process
+# `conntrack -L` reads the kernel connection table over netlink, which needs
+# CAP_NET_ADMIN. The ambient set is inherited by the child (also with
+# NoNewPrivileges=yes); the daemon is allowed nothing else.
+AmbientCapabilities=CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_ADMIN
+SyslogIdentifier=unbound-route-state
+
+[Install]
+WantedBy=multi-user.target
